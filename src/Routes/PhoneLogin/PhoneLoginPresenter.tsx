@@ -1,6 +1,5 @@
 import React from "react";
 import Helmet from "react-helmet";
-import PropTypes from "prop-types";
 import BackArrow from "../../Components/BackArrow";
 import Input from "../../Components/Input";
 import countries from "../../countries";
@@ -57,24 +56,26 @@ const Button = styled.button`
 interface IProps {
     countryCode: string;
     phoneNumber: string;
+    onInputChange: (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => void;
+    onSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
 }
 
-const PhoneLoginPresenter: React.SFC<IProps> = ({ countryCode, phoneNumber }) => (
+const PhoneLoginPresenter: React.SFC<IProps> = ({ countryCode, phoneNumber, onInputChange, onSubmit }) => (
     <Container>
         <Helmet>
             <title>Phone Login | HUFS CAR</title>
         </Helmet>
         <BackArrowExtended backTo={"/"} />
         <Title>Enter your mobile number</Title>
-        <CountrySelect value={countryCode}>
+        <CountrySelect value={countryCode} name={"countryCode"} onChange={onInputChange}>
             {countries.map((country, index) => (
                 <CountryOption key={index} value={country.dial_code}>
                     {country.flag} {country.name} ({country.dial_code})
                 </CountryOption>
             ))}
         </CountrySelect>
-        <Form>
-            <Input placeholder={"053 690 2129"} value={phoneNumber} />
+        <Form onSubmit={onSubmit}>
+            <Input placeholder={"053 690 2129"} value={phoneNumber} name={"phoneNumber"} onChange={onInputChange} />
             <Button>
                 <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -89,10 +90,5 @@ const PhoneLoginPresenter: React.SFC<IProps> = ({ countryCode, phoneNumber }) =>
         </Form>
     </Container>
 );
-
-PhoneLoginPresenter.propTypes = {
-    countryCode: PropTypes.string.isRequired,
-    phoneNumber: PropTypes.string.isRequired
-}
 
 export default PhoneLoginPresenter;
