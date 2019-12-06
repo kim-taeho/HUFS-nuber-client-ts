@@ -77,7 +77,7 @@ const LoginPresenter: React.SFC<IProps> = () => (
     <Footer>
       <Link to={"/phone-login"}>
         <PhoneLogin>
-          <Subtitle>Get moving with HUFS CAR</Subtitle>
+          <Subtitle>CARPOOL with HUFS CAR</Subtitle>
           <FakeInput>
             🇰🇷 +82 <Grey>Enter your mobile number</Grey>
           </FakeInput>

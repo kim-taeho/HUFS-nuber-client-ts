@@ -3,16 +3,17 @@ import PhoneLoginPresenter from "./PhoneLoginPresenter";
 import { RouteComponentProps } from "react-router";
 import { toast } from "react-toastify";
 import { Mutation } from "react-apollo";
-import { PHONE_SIGN_IN } from "./PhoneQueies.queries";
+import { PHONE_SIGN_IN } from "./PhoneQueries.queries";
+import { startPhoneVerification, startPhoneVerificationVariables } from "../../types/api";
 
 interface IState {
     countryCode: string;
     phoneNumber: string;
 }
-interface IMutationInterface {
-    phoneNumber: string;
-}
-class PhoneSignInMutation extends Mutation<any, IMutationInterface> { }
+
+class PhoneSignInMutation extends Mutation<
+    startPhoneVerification,
+    startPhoneVerificationVariables> { }
 
 class PhoneLoginContainer extends React.Component<RouteComponentProps<any>, IState> {
     public state = {
@@ -21,18 +22,38 @@ class PhoneLoginContainer extends React.Component<RouteComponentProps<any>, ISta
     };
 
     public render() {
+        const { history } = this.props;
         const { countryCode, phoneNumber } = this.state;
         return (
             <PhoneSignInMutation
                 mutation={PHONE_SIGN_IN}
                 variables={{
                     phoneNumber: `${countryCode}${phoneNumber}`
-                }}>
+                }}
+                onCompleted={(data) => {
+                    const phone = `${countryCode}${phoneNumber}`;
+                    const { StartPhoneVerification } = data;
+                    if (StartPhoneVerification.ok) {
+                        toast.success("SMS Sent!");
+                        setTimeout(() => {
+                            history.push({
+                                pathname: "/verify-phone",
+                                state: {
+                                    phone
+                                }
+                            });
+                        }, 2000);
+                    } else {
+                        toast.error(StartPhoneVerification.error);
+                    }
+                }}
+            >
                 {(mutation, { loading }) => {
                     const onSubmit: React.FormEventHandler<HTMLFormElement> = event => {
                         event.preventDefault();
+                        const phone = `${countryCode}${phoneNumber}`;
                         const isValid = /^\+[1-9]{1}[0-9]{7,11}$/.test(
-                            `${countryCode}${phoneNumber}`
+                            phone
                         );
                         if (isValid) {
                             mutation();
@@ -61,21 +82,7 @@ class PhoneLoginContainer extends React.Component<RouteComponentProps<any>, ISta
         this.setState({
             [name]: value
         } as any);
-    }
-
-    public onSubmit: React.FormEventHandler<HTMLFormElement> = event => {
-        event.preventDefault();
-        const { countryCode, phoneNumber } = this.state;
-        console.log(countryCode, phoneNumber);
-        const isValid = /^\+[1-9]{1}[0-9]{7,11}$/.test(
-            `${countryCode}${phoneNumber}`
-        );
-        if (isValid) {
-            return;
-        } else {
-            toast.error("Please write a valid phone number");
-        }
-    }
+    };
 }
 
 export default PhoneLoginContainer;
