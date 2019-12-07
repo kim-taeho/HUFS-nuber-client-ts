@@ -1,6 +1,6 @@
 import React from "react";
 import { graphql } from "react-apollo";
-import { IS_LOGGED_IN } from "./AppQueries";
+import { IS_LOGGED_IN } from "./AppQueries.local";
 import AppPresenter from "./AppPresenter";
 import { ThemeProvider } from "../../typed-components";
 import { ToastContainer } from "react-toastify";

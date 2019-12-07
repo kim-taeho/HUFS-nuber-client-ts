@@ -3,7 +3,7 @@ import PhoneLoginPresenter from "./PhoneLoginPresenter";
 import { RouteComponentProps } from "react-router";
 import { toast } from "react-toastify";
 import { Mutation } from "react-apollo";
-import { PHONE_SIGN_IN } from "./PhoneQueries.queries";
+import { PHONE_SIGN_IN } from "./PhoneQueries";
 import { startPhoneVerification, startPhoneVerificationVariables } from "../../types/api";
 
 interface IState {
@@ -16,6 +16,7 @@ class PhoneSignInMutation extends Mutation<
     startPhoneVerificationVariables> { }
 
 class PhoneLoginContainer extends React.Component<RouteComponentProps<any>, IState> {
+
     public state = {
         countryCode: "+82",
         phoneNumber: ""
