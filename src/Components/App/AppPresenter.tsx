@@ -41,7 +41,7 @@ const LoggedOutRoutes: React.SFC = () => (
 
 const LoggedInRoutes: React.SFC = () => (
     <Switch>
-        <Route path={"/"} exact={true} component={Home} />
+        <Route path={""} exact={true} component={Home} />
         <Route path={"/ride"} exact={true} component={Ride} />
         <Route path={"/edit-account"} exact={true} component={EditAccount} />
         <Route path={"/settings"} exact={true} component={Settings} />
