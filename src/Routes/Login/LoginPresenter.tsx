@@ -35,6 +35,7 @@ const Footer = styled.div``;
 
 const Subtitle = styled.h2`
   font-size: 30px;
+  text-decoration: none;
 `;
 
 const FakeInput = styled.div`
@@ -55,11 +56,13 @@ const Grey = styled.span`
 const SocialLogin = styled.div`
   border-top: 1px solid ${props => props.theme.greyColor};
   padding: 30px 20px;
+  text-decoration: none;
 `;
 
 const SocialLink = styled.span`
   color: ${props => props.theme.blueColor};
   font-size: 20px;
+  text-decoration: none;
 `;
 
 interface IProps extends RouteComponentProps<any> { }
@@ -75,7 +78,7 @@ const LoginPresenter: React.SFC<IProps> = () => (
       </Logo>
     </Header>
     <Footer>
-      <Link to={"/phone-login"}>
+      <Link to={"/phone-login"} style={{ textDecoration: 'none' }}>
         <PhoneLogin>
           <Subtitle>CARPOOL with HUFS CAR</Subtitle>
           <FakeInput>
@@ -83,7 +86,7 @@ const LoginPresenter: React.SFC<IProps> = () => (
           </FakeInput>
         </PhoneLogin>
       </Link>
-      <Link to={"/social-login"}>
+      <Link to={"/social-login"} style={{ textDecoration: 'none' }}>
         <SocialLogin>
           <SocialLink>Or connect with social</SocialLink>
         </SocialLogin>

@@ -39,7 +39,7 @@ const client = new ApolloClient({
     },
     request: async (operation: Operation) => {
         operation.setContext({
-            header: {
+            headers: {
                 "X-JWT": localStorage.getItem("jwt") || ""
             }
         });
