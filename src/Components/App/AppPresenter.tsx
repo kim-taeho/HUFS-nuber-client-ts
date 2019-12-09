@@ -23,11 +23,7 @@ interface IProps {
     isLoggedIn: boolean;
 }
 
-const AppPresenter: React.SFC<IProps> = ({ isLoggedIn }) => (
-    <BrowserRouter>
-        {isLoggedIn ? <LoggedInRoutes /> : <LoggedOutRoutes />}
-    </BrowserRouter>
-);
+
 
 const LoggedOutRoutes: React.SFC = () => (
     <Switch>
@@ -41,16 +37,22 @@ const LoggedOutRoutes: React.SFC = () => (
 
 const LoggedInRoutes: React.SFC = () => (
     <Switch>
-        <Route path={""} exact={true} component={Home} />
-        <Route path={"/ride"} exact={true} component={Ride} />
-        <Route path={"/edit-account"} exact={true} component={EditAccount} />
-        <Route path={"/settings"} exact={true} component={Settings} />
-        <Route path={"/places"} exact={true} component={Places} />
-        <Route path={"/add-place"} exact={true} component={AddPlace} />
-        <Route path={"/finde-address"} exact={true} component={FindAddress} />
+        <Route path={"/"} exact={true} component={Home} />
+        <Route path={"/edit-account"} component={EditAccount} />
+        <Route path={"/ride"} component={Ride} />
+        <Route path={"/settings"} component={Settings} />
+        <Route path={"/places"} component={Places} />
+        <Route path={"/add-place"} component={AddPlace} />
+        <Route path={"/finde-address"} component={FindAddress} />
         <Redirect from={"*"} to={"/"} />
     </Switch>
 )
+
+const AppPresenter: React.SFC<IProps> = ({ isLoggedIn }) => (
+    <BrowserRouter>
+        {isLoggedIn ? <LoggedInRoutes /> : <LoggedOutRoutes />}
+    </BrowserRouter>
+);
 
 AppPresenter.propTypes = {
     isLoggedIn: PropTypes.bool.isRequired
