@@ -43,47 +43,57 @@ const SLink = styled(Link)`
 `;
 
 interface IProps {
-    logUserOut: MutationFn;
-    userData?: userProfile;
-    placesData?: getPlaces;
-    userDataLoading: boolean;
-    placesLoading: boolean;
+  logUserOut: MutationFn;
+  userData?: userProfile;
+  placesData?: getPlaces;
+  userDataLoading: boolean;
+  placesLoading: boolean;
 }
 
 const SettingsPresenter: React.SFC<IProps> = ({
-    logUserOut,
-    userData: { GetMyProfile: { user = null } = {} } = {},
-    placesData: { GetMyPlaces: { places = null } = {} } = {},
-    userDataLoading,
-    placesLoading
+  logUserOut,
+  userData: { GetMyProfile: { user = null } = {} } = {},
+  placesData: { GetMyPlaces: { places = null } = {} } = {},
+  userDataLoading,
+  placesLoading
 }) => (
-        <React.Fragment>
-            <Helmet>
-                <title>Settings | Nuber</title>
-            </Helmet>
-            <Header title={"Account Settings"} backTo={"/"} />
-            <Container>
-                <GridLink to={"/edit-account"}>
-                    {!userDataLoading &&
-                        user &&
-                        user.profilePhoto &&
-                        user.email &&
-                        user.fullName && (
-                            <React.Fragment>
-                                <Image src={user.profilePhoto} />
-                                <Keys>
-                                    <Key>{user.fullName}</Key>
-                                    <Key>{user.email}</Key>
-                                </Keys>
-                            </React.Fragment>
-                        )}
-                </GridLink>
-                {!placesLoading && places && places.map(place => <Place key={place!.id} fav={place!.isFav} name={place!.name} address={place!.address} />)}
+    <React.Fragment>
+      <Helmet>
+        <title>Settings | Nuber</title>
+      </Helmet>
+      <Header title={"Account Settings"} backTo={"/"} />
+      <Container>
+        <GridLink to={"/edit-account"}>
+          {!userDataLoading &&
+            user &&
+            user.profilePhoto &&
+            user.email &&
+            user.fullName && (
+              <React.Fragment>
+                <Image src={user.profilePhoto} />
+                <Keys>
+                  <Key>{user.fullName}</Key>
+                  <Key>{user.email}</Key>
+                </Keys>
+              </React.Fragment>
+            )}
+        </GridLink>
+        {!placesLoading &&
+          places &&
+          places.map(place => (
+            <Place
+              fav={place!.isFav}
+              name={place!.name}
+              address={place!.address}
+              key={place!.id}
+              id={place!.id}
+            />
+          ))}
 
-                <SLink to={"/places"}>Go to Places</SLink>
-                <FakeLink onClick={logUserOut as any}>Log Out</FakeLink>
-            </Container>
-        </React.Fragment>
-    );
+        <SLink to={"/places"}>Go to Places</SLink>
+        <FakeLink onClick={logUserOut as any}>Log Out</FakeLink>
+      </Container>
+    </React.Fragment>
+  );
 
 export default SettingsPresenter;

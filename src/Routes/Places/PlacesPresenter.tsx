@@ -28,9 +28,12 @@ const PlacesPresenter: React.SFC<IProps> = ({ data: { GetMyPlaces: { places = nu
         <Container>
             <Header title={"Places"} backTo={"/"} />
             {!loading && places && places.length === 0 && (
-                <SLink to={"/add-place"}>Add some Places!</SLink>
+                "You have no places"
             )}
-            {!loading && places && places.map(place => <Place key={place!.id} fav={place!.isFav} name={place!.name} address={place!.address} />)}
+            {!loading && places && places.map(place => (
+                <Place id={place!.id} key={place!.id} fav={place!.isFav} name={place!.name} address={place!.address} />
+            ))}
+            <SLink to={"/add-place"}>Add some Places!</SLink>
         </Container>
     </React.Fragment>
 )
