@@ -28,19 +28,19 @@ const Address = styled.span`
 `;
 
 interface IProps {
-    fav: boolean;
-    name: string;
-    address: string;
+  fav: boolean;
+  name: string;
+  address: string;
 }
 
 const PlacePresenter: React.SFC<IProps> = ({ fav, name, address }) => (
-    <Place>
-        <Icon>{fav ? "✩" : "★"}</Icon>
-        <Container>
-            <Name>{name}</Name>
-            <Address>{address}</Address>
-        </Container>
-    </Place>
+  <Place>
+    <Icon>{fav ? "★" : "✩"}</Icon>
+    <Container>
+      <Name>{name}</Name>
+      <Address>{address}</Address>
+    </Container>
+  </Place>
 );
 
 export default PlacePresenter;
