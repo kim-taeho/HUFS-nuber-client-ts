@@ -32,7 +32,7 @@ const ExtendedButton = styled(Button)`
   left: 0;
   right: 0;
   margin:auto;
-  z-index:10;
+  z-index:3;
   height: auto;
   width: 80%;
 `;
