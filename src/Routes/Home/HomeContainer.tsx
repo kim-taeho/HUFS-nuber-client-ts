@@ -1,12 +1,13 @@
 import React from "react";
 import HomePresenter from "./HomePresenter";
 import { RouteComponentProps } from "react-router";
-import { Query } from "react-apollo";
-import { userProfile } from "../../types/api";
+import { Query, graphql, MutationFn } from "react-apollo";
+import { userProfile, reportMovement, reportMovementVariables, getDrivers } from "../../types/api";
 import { USER_PROFILE } from "../../sharedQueries";
 import ReactDOM from "react-dom";
 import { geoCode } from "../../mapHelpers";
 import { toast } from "react-toastify";
+import { REPORT_LOCATION, GET_NEARBY_DRIVERS } from "./HomeQueries";
 
 interface IState {
     isMenuOpen: boolean;
@@ -22,9 +23,12 @@ interface IState {
 }
 interface IProps extends RouteComponentProps<any> {
     google: any;
+    reportLocation: MutationFn;
 }
 
 class ProfileQuery extends Query<userProfile> { }
+
+class NearbyQueries extends Query<getDrivers> { }
 
 class HomeContainer extends React.Component<IProps, IState> {
     public mapRef: any;
@@ -32,6 +36,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     public userMarker: google.maps.Marker;
     public toMarker: google.maps.Marker;
     public directions: google.maps.DirectionsRenderer;
+    public drivers: google.maps.Marker[];
     public state = {
         isMenuOpen: false,
         lat: 0,
@@ -46,6 +51,7 @@ class HomeContainer extends React.Component<IProps, IState> {
     constructor(props) {
         super(props);
         this.mapRef = React.createRef();
+        this.drivers = [];
     }
     public componentDidMount() {
         navigator.geolocation.getCurrentPosition(
@@ -58,16 +64,25 @@ class HomeContainer extends React.Component<IProps, IState> {
         const { isMenuOpen, toAddress, price } = this.state;
         return (
             <ProfileQuery query={USER_PROFILE}>
-                {({ loading }) => (
-                    <HomePresenter
-                        loading={loading}
-                        isMenuOpen={isMenuOpen}
-                        toggleMenu={this.toggleMenu}
-                        toAddress={toAddress}
-                        onInputChange={this.onInputChange}
-                        price={price}
-                        onAddressSubmit={this.onAddressSubmit}
-                        mapRef={this.mapRef} />
+                {({ data, loading }) => (
+                    <NearbyQueries
+                        query={GET_NEARBY_DRIVERS}
+                        pollInterval={1000} // API 자동실행 주기 = data를 얼마나 자주 얻을것인가 = data의 변화가 없다면 변화없음, refetching은 상관없이 계속 호출
+                        skip={(data && data.GetMyProfile && data.GetMyProfile.user && data.GetMyProfile.user.isDriving) || false}
+                        onCompleted={this.handleNearbyDrivers} >
+                        {({ }) => (
+                            <HomePresenter
+                                loading={loading}
+                                isMenuOpen={isMenuOpen}
+                                toggleMenu={this.toggleMenu}
+                                toAddress={toAddress}
+                                onInputChange={this.onInputChange}
+                                price={price}
+                                data={data}
+                                onAddressSubmit={this.onAddressSubmit}
+                                mapRef={this.mapRef} />
+                        )}
+                    </NearbyQueries>
                 )}
             </ProfileQuery>
         );
@@ -92,6 +107,10 @@ class HomeContainer extends React.Component<IProps, IState> {
         const { google } = this.props;
         const maps = google.maps;
         const mapNode = ReactDOM.findDOMNode(this.mapRef.current);
+        if (!mapNode) {
+            this.loadMap(lat, lng);
+            return;
+        }
         const mapConfig: google.maps.MapOptions = {
             center: {
                 lat,
@@ -123,9 +142,16 @@ class HomeContainer extends React.Component<IProps, IState> {
         } as any);
     };
     public handleGeoWatchSuccess = (position: Position) => {
+        const { reportLocation } = this.props;
         const { coords: { latitude, longitude } } = position;
         this.userMarker.setPosition({ lat: latitude, lng: longitude });
         this.map.panTo({ lat: latitude, lng: longitude });
+        reportLocation({
+            variables: {
+                lat: parseFloat(latitude.toFixed(10)),
+                lng: parseFloat(longitude.toFixed(10)) // toFixed(10) : 10개짜리 string으로 만듬
+            }
+        })
     }
     public handleGeoWatchError = () => {
         console.log("Error watching you");
@@ -183,6 +209,7 @@ class HomeContainer extends React.Component<IProps, IState> {
             travelMode: google.maps.TravelMode.TRANSIT
         };
         directionService.route(directionOptions, (result, status) => {
+            console.log(result);
             if (status === google.maps.DirectionsStatus.OK) {
                 const { routes } = result;
                 const {
@@ -208,6 +235,33 @@ class HomeContainer extends React.Component<IProps, IState> {
             })
         }
     }
+    public handleNearbyDrivers = (data: {} | getDrivers) => {
+        if ("GetNearbyDrivers" in data) {
+            const { GetNearbyDrivers: { drivers, ok } } = data;
+            if (ok && drivers) {
+                if (drivers) {
+                    for (const driver of drivers) {
+                        if (driver && driver.lastLat && driver.lastLng) {
+                            const markerOptions: google.maps.MarkerOptions = {
+                                position: {
+                                    lat: driver.lastLat,
+                                    lng: driver.lastLng
+                                },
+                                icon: {
+                                    path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                                    scale: 5
+                                }
+                            };
+                            const newMarker: google.maps.Marker = new google.maps.Marker(markerOptions);
+                            newMarker.set("ID", driver.id); // 나중에 움직여야할때를 위해 설정
+                            newMarker.setMap(this.map);
+                            this.drivers.push(newMarker);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
-export default HomeContainer;
+export default graphql<any, reportMovement, reportMovementVariables>(REPORT_LOCATION, { name: "reportLocation" })(HomeContainer);
