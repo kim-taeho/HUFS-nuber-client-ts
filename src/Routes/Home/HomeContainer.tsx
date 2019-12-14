@@ -2,12 +2,12 @@ import React from "react";
 import HomePresenter from "./HomePresenter";
 import { RouteComponentProps } from "react-router";
 import { Query, graphql, MutationFn, Mutation } from "react-apollo";
-import { userProfile, reportMovement, reportMovementVariables, getDrivers, requestRide, requestRideVariables } from "../../types/api";
+import { userProfile, reportMovement, reportMovementVariables, getDrivers, requestRide, requestRideVariables, getRides, acceptRide, acceptRideVariables } from "../../types/api";
 import { USER_PROFILE } from "../../sharedQueries";
 import ReactDOM from "react-dom";
 import { geoCode, reverseGeoCode } from "../../mapHelpers";
 import { toast } from "react-toastify";
-import { REPORT_LOCATION, GET_NEARBY_DRIVERS, REQUEST_RIDE } from "./HomeQueries";
+import { REPORT_LOCATION, GET_NEARBY_DRIVERS, REQUEST_RIDE, GET_NEARBY_RIDE, ACCEPT_RIDE } from "./HomeQueries";
 
 interface IState {
     isMenuOpen: boolean;
@@ -32,6 +32,10 @@ class ProfileQuery extends Query<userProfile> { }
 class NearbyQueries extends Query<getDrivers> { }
 
 class RequestRideMutation extends Mutation<requestRide, requestRideVariables> { }
+
+class GetNearbyRides extends Query<getRides> { }
+
+class AcceptRide extends Mutation<acceptRide, acceptRideVariables> { }
 
 class HomeContainer extends React.Component<IProps, IState> {
     public mapRef: any;
@@ -76,19 +80,21 @@ class HomeContainer extends React.Component<IProps, IState> {
             lng,
             toLat,
             toLng,
-            duration
+            duration,
+            isDriving
         } = this.state;
         return (
-            <ProfileQuery query={USER_PROFILE}>
+            <ProfileQuery query={USER_PROFILE} onCompleted={this.handleProfileQuery}>
                 {({ data, loading }) => (
                     <NearbyQueries
                         query={GET_NEARBY_DRIVERS}
-                        pollInterval={1000} // API 자동실행 주기 = data를 얼마나 자주 얻을것인가 = data의 변화가 없다면 변화없음, refetching은 상관없이 계속 호출
-                        skip={(data && data.GetMyProfile && data.GetMyProfile.user && data.GetMyProfile.user.isDriving) || false}
+                        pollInterval={5000} // API 자동실행 주기 = data를 얼마나 자주 얻을것인가 = data의 변화가 없다면 변화없음, refetching은 상관없이 계속 호출
+                        skip={isDriving}
                         onCompleted={this.handleNearbyDrivers} >
                         {() => (
                             <RequestRideMutation
                                 mutation={REQUEST_RIDE}
+                                onCompleted={this.handleRideRequest}
                                 variables={{
                                     distance,
                                     pickUpAddress: fromAddress,
@@ -101,18 +107,30 @@ class HomeContainer extends React.Component<IProps, IState> {
                                     duration: duration || ""
                                 }}>
                                 {requestRideFn => (
-                                    <HomePresenter
-                                        loading={loading}
-                                        isMenuOpen={isMenuOpen}
-                                        toggleMenu={this.toggleMenu}
-                                        toAddress={toAddress}
-                                        onInputChange={this.onInputChange}
-                                        price={price}
-                                        data={data}
-                                        onAddressSubmit={this.onAddressSubmit}
-                                        mapRef={this.mapRef}
-                                        requestRideFn={requestRideFn}
-                                    />
+                                    <GetNearbyRides
+                                        query={GET_NEARBY_RIDE}
+                                        skip={!isDriving}>
+                                        {({ data: nearbyRide }) => (
+                                            <AcceptRide mutation={ACCEPT_RIDE}>
+                                                {(acceptRideFn) => (
+                                                    <HomePresenter
+                                                        loading={loading}
+                                                        isMenuOpen={isMenuOpen}
+                                                        toggleMenu={this.toggleMenu}
+                                                        toAddress={toAddress}
+                                                        onInputChange={this.onInputChange}
+                                                        price={price}
+                                                        data={data}
+                                                        onAddressSubmit={this.onAddressSubmit}
+                                                        mapRef={this.mapRef}
+                                                        requestRideFn={requestRideFn}
+                                                        nearbyRide={nearbyRide}
+                                                        acceptRideFn={acceptRideFn}
+                                                    />
+                                                )}
+                                            </AcceptRide>
+                                        )}
+                                    </GetNearbyRides>
                                 )}
                             </RequestRideMutation>
                         )}
@@ -333,6 +351,25 @@ class HomeContainer extends React.Component<IProps, IState> {
                         }
                     }
                 }
+            }
+        }
+    }
+    public handleRideRequest = (data: requestRide) => {
+        const { RequestRide } = data;
+        if (RequestRide.ok) {
+            toast.success("Drive Registered, finding a driver");
+        } else {
+            toast.error(RequestRide.error);
+        }
+    };
+    public handleProfileQuery = (data: userProfile) => {
+        const { GetMyProfile } = data;
+        if (GetMyProfile.user) {
+            const { user: { isDriving } } = GetMyProfile;
+            if (isDriving) {
+                this.setState({
+                    isDriving
+                })
             }
         }
     }
