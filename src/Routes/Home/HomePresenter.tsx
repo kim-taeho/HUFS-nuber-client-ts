@@ -6,6 +6,7 @@ import Menu from "../../Components/Menu";
 import Button from "../../Components/Button";
 import AddressBar from "../../Components/AddressBar";
 import { userProfile } from "../../types/api";
+import { MutationFn } from "react-apollo";
 
 const Container = styled.div``;
 
@@ -56,9 +57,10 @@ interface IProps {
     onInputChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
     price?: number;
     data?: userProfile;
+    requestRideFn: MutationFn;
 }
 
-const HomePresenter: React.SFC<IProps> = ({ data: { GetMyProfile: { user = null } = {} } = {}, mapRef, isMenuOpen, toggleMenu, loading, toAddress, onAddressSubmit, onInputChange, price }) => (
+const HomePresenter: React.SFC<IProps> = ({ data: { GetMyProfile: { user = null } = {} } = {}, mapRef, isMenuOpen, toggleMenu, loading, toAddress, onAddressSubmit, onInputChange, price, requestRideFn }) => (
     <Container>
         <Helmet>
             <title>Home | HUFS CAR</title>
@@ -76,7 +78,7 @@ const HomePresenter: React.SFC<IProps> = ({ data: { GetMyProfile: { user = null 
                     <ExtendedButton onClick={onAddressSubmit} disabled={toAddress === ""} value={price ? "Change Address" : "Pick Address"} />
                 </React.Fragment>
             )}
-            {price && <RequestButton onClick={onAddressSubmit} disabled={toAddress === ""} value={`Request Ride ($${price})`} />}
+            {price && <RequestButton onClick={requestRideFn} disabled={toAddress === ""} value={`Request Ride ($${price})`} />}
             <Map ref={mapRef} />
         </Sidebar>
     </Container>

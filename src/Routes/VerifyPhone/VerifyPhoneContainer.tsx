@@ -1,7 +1,7 @@
 import React from "react";
 import { RouteComponentProps } from "react-router-dom";
 import VerifyPhonePresenter from "./VerifyPhonePresenter";
-import { graphql, Mutation } from "react-apollo";
+import { Mutation } from "react-apollo";
 import { verifyPhone, verifyPhoneVariables } from "../../types/api";
 import { VERIFY_PHONE } from "./VerifyPhoneQueries";
 import { toast } from "react-toastify";
@@ -45,6 +45,7 @@ class VerifyPhoneContainer extends React.Component<IProps, IState> {
                                         }
                                     });
                                 }
+                                toast.success("You're verified");
                             } else {
                                 toast.error(CompletePhoneNumberVerification.error);
                             }
@@ -52,7 +53,11 @@ class VerifyPhoneContainer extends React.Component<IProps, IState> {
                         }
                     >
                         {(mutation, { loading }) => (
-                            <VerifyPhonePresenter onSubmit={mutation} onChange={this.onInputChange} verificationKey={verificationKey} loading={loading} />
+                            <VerifyPhonePresenter
+                                onSubmit={mutation}
+                                onChange={this.onInputChange}
+                                verificationKey={verificationKey}
+                                loading={loading} />
                         )}
                     </VerifyMutation>
                 )}
@@ -70,6 +75,4 @@ class VerifyPhoneContainer extends React.Component<IProps, IState> {
     };
 }
 
-export default graphql<IProps, any>(LOG_USER_IN, {
-    name: "logUserIn"
-})(VerifyPhoneContainer);
+export default VerifyPhoneContainer;
