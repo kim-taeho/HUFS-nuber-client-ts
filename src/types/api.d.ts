@@ -221,6 +221,7 @@ export interface acceptRide_UpdateRideStatus {
   __typename: "UpdateRideStatusResponse";
   ok: boolean;
   error: string | null;
+  rideId: number | null;
 }
 
 export interface acceptRide {
@@ -279,6 +280,54 @@ export interface startPhoneVerification {
 
 export interface startPhoneVerificationVariables {
   phoneNumber: string;
+}
+
+/* tslint:disable */
+/* eslint-disable */
+// This file was automatically generated and should not be edited.
+
+// ====================================================
+// GraphQL query operation: getRide
+// ====================================================
+
+export interface getRide_GetRide_ride_driver {
+  __typename: "User";
+  fullName: string | null;
+  profilePhoto: string | null;
+}
+
+export interface getRide_GetRide_ride_passenger {
+  __typename: "User";
+  fullName: string | null;
+  profilePhoto: string | null;
+}
+
+export interface getRide_GetRide_ride {
+  __typename: "Ride";
+  status: string;
+  pickUpAddress: string;
+  dropOffAddress: string;
+  price: number;
+  distance: string;
+  duration: string;
+  driver: getRide_GetRide_ride_driver;
+  passenger: getRide_GetRide_ride_passenger;
+  chatId: number | null;
+}
+
+export interface getRide_GetRide {
+  __typename: "GetRideResponse";
+  ok: boolean;
+  error: string | null;
+  ride: getRide_GetRide_ride | null;
+}
+
+export interface getRide {
+  GetRide: getRide_GetRide;
+}
+
+export interface getRideVariables {
+  rideId: number;
 }
 
 /* tslint:disable */
