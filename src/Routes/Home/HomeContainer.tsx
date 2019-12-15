@@ -7,7 +7,8 @@ import { USER_PROFILE } from "../../sharedQueries";
 import ReactDOM from "react-dom";
 import { geoCode, reverseGeoCode } from "../../mapHelpers";
 import { toast } from "react-toastify";
-import { REPORT_LOCATION, GET_NEARBY_DRIVERS, REQUEST_RIDE, GET_NEARBY_RIDE, ACCEPT_RIDE } from "./HomeQueries";
+import { REPORT_LOCATION, GET_NEARBY_DRIVERS, REQUEST_RIDE, GET_NEARBY_RIDE, ACCEPT_RIDE, SUBSCRIBE_NEARBY_RIDES } from "./HomeQueries";
+import { SubscribeToMoreOptions } from "apollo-boost";
 
 interface IState {
     isMenuOpen: boolean;
@@ -110,26 +111,46 @@ class HomeContainer extends React.Component<IProps, IState> {
                                     <GetNearbyRides
                                         query={GET_NEARBY_RIDE}
                                         skip={!isDriving}>
-                                        {({ data: nearbyRide }) => (
-                                            <AcceptRide mutation={ACCEPT_RIDE}>
-                                                {(acceptRideFn) => (
-                                                    <HomePresenter
-                                                        loading={loading}
-                                                        isMenuOpen={isMenuOpen}
-                                                        toggleMenu={this.toggleMenu}
-                                                        toAddress={toAddress}
-                                                        onInputChange={this.onInputChange}
-                                                        price={price}
-                                                        data={data}
-                                                        onAddressSubmit={this.onAddressSubmit}
-                                                        mapRef={this.mapRef}
-                                                        requestRideFn={requestRideFn}
-                                                        nearbyRide={nearbyRide}
-                                                        acceptRideFn={acceptRideFn}
-                                                    />
-                                                )}
-                                            </AcceptRide>
-                                        )}
+                                        {({ subscribeToMore, data: nearbyRide }) => {
+                                            const rideSubscriptionOptions: SubscribeToMoreOptions = {
+                                                document: SUBSCRIBE_NEARBY_RIDES,
+                                                updateQuery: (prev, { subscriptionData }) => {
+                                                    if (!subscriptionData.data) {
+                                                        return prev;
+                                                    }
+                                                    const newObject = Object.assign({}, prev, {
+                                                        GetNearbyRides: {
+                                                            ...prev.GetNearbyRides,
+                                                            ride: subscriptionData.data.NearbyRideSubscription
+                                                        }
+                                                    });
+                                                    return newObject;
+                                                }
+                                            };
+                                            if (isDriving) {
+                                                subscribeToMore(rideSubscriptionOptions);
+                                            }
+                                            return (
+                                                <AcceptRide mutation={ACCEPT_RIDE}>
+                                                    {(acceptRideFn) => (
+                                                        <HomePresenter
+                                                            loading={loading}
+                                                            isMenuOpen={isMenuOpen}
+                                                            toggleMenu={this.toggleMenu}
+                                                            toAddress={toAddress}
+                                                            onInputChange={this.onInputChange}
+                                                            price={price}
+                                                            data={data}
+                                                            onAddressSubmit={this.onAddressSubmit}
+                                                            mapRef={this.mapRef}
+                                                            requestRideFn={requestRideFn}
+                                                            nearbyRide={nearbyRide}
+                                                            acceptRideFn={acceptRideFn}
+                                                        />
+                                                    )}
+                                                </AcceptRide>
+                                            )
+                                        }}
                                     </GetNearbyRides>
                                 )}
                             </RequestRideMutation>
@@ -322,10 +343,10 @@ class HomeContainer extends React.Component<IProps, IState> {
             const { GetNearbyDrivers: { drivers, ok } } = data;
             if (ok && drivers) {
                 for (const driver of drivers) {
-                    console.log("Listening Drivers 1");
-                    console.log(driver!.lastLat, driver!.lastLng);
+                    // console.log("Listening Drivers 1");
+                    // console.log(driver!.lastLat, driver!.lastLng);
                     if (driver && driver.lastLat && driver.lastLng) {
-                        console.log("Listening Drivers 2");
+                        // console.log("Listening Drivers 2");
                         const existingDriver: google.maps.Marker | undefined = this.drivers.find((driverMarker: google.maps.Marker) => {
                             const markerID = driverMarker.get("ID");
                             return markerID === driver.id;

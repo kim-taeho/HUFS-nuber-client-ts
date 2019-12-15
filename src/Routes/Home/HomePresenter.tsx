@@ -104,8 +104,9 @@ const HomePresenter: React.SFC<IProps> = ({
                         passengerName={ride.passenger.fullName!}
                         passengerPhoto={ride.passenger.profilePhoto!}
                         acceptRideFn={acceptRideFn}
-                    />)};
-                    <Map ref={mapRef} />
+                    />
+                )}
+                <Map ref={mapRef} />
             </Sidebar>
         </Container>
     );
