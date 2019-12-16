@@ -37,7 +37,8 @@
     "test": "react-scripts-ts test --env=jsdom",
     "eject": "react-scripts-ts eject",
     "precodegen": "apollo service:download --endpoint=http://localhost:4000/graphql",
-    "codegen": "apollo codegen:generate src/types/api.d.ts --queries='src/**/!(*.local).ts' --addTypename --localSchemaFile=schema.json --target typescript --outputFlat"
+    "codegen": "apollo codegen:generate src/types/api.d.ts --queries='src/**/!(*.local).ts' --addTypename --localSchemaFile=schema.json --target typescript --outputFlat",
+    "deploy": "gh-pages -d dist"
   },
   "devDependencies": {
     "@types/googlemaps": "^3.38.1",
@@ -45,7 +46,9 @@
     "@types/node": "^12.12.14",
     "@types/react": "^16.9.14",
     "@types/react-dom": "^16.9.4",
+    "gh-pages": "^2.1.1",
     "react-sidebar": "^3.0.2",
     "typescript": "^3.7.3"
-  }
+  },
+  "homepage": "https://github.com/kim-taeho/HUFS-nuber-client-ts/"
 }
