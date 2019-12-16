@@ -23,7 +23,9 @@ class RideContainer extends React.Component<IProps> {
         }
     }
     public render() {
-        const { match: { params: { rideId } } } = this.props;
+        // console.log(this.props);
+        let { match: { params: { rideId } } } = this.props;
+        rideId = Number(rideId);
         return (
             <ProfileQuery query={USER_PROFILE}>
                 {({ data: userData }) => (
@@ -35,13 +37,17 @@ class RideContainer extends React.Component<IProps> {
                                     if (!subscriptionData.data) {
                                         return prev;
                                     }
+                                    const { data: { RideStatusSubscription: { status } } } = subscriptionData;
+                                    if (status === "FINISHED") {
+                                        window.location.href = "/";
+                                    }
                                 }
                             };
                             subscribeToMore(subscibeOptions);
                             return (
                                 <RideUpdate
                                     mutation={UPDATE_RIDE_STATUS}
-                                    refetchQueries={GET_RIDE}>
+                                >
                                     {(updateRideFn) => (
                                         <RidePresenter
                                             userData={userData}

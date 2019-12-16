@@ -89,28 +89,28 @@ class HomeContainer extends React.Component<IProps, IState> {
                 {({ data, loading }) => (
                     <NearbyQueries
                         query={GET_NEARBY_DRIVERS}
-                        pollInterval={5000} // API 자동실행 주기 = data를 얼마나 자주 얻을것인가 = data의 변화가 없다면 변화없음, refetching은 상관없이 계속 호출
                         skip={isDriving}
-                        onCompleted={this.handleNearbyDrivers} >
+                        pollInterval={5000}
+                        onCompleted={this.handleNearbyDrivers}
+                    >
                         {() => (
                             <RequestRideMutation
                                 mutation={REQUEST_RIDE}
                                 onCompleted={this.handleRideRequest}
                                 variables={{
                                     distance,
-                                    pickUpAddress: fromAddress,
-                                    pickUpLat: lat,
-                                    pickUpLng: lng,
                                     dropOffAddress: toAddress,
                                     dropOffLat: toLat,
                                     dropOffLng: toLng,
-                                    price: price || 0,
-                                    duration: duration || ""
-                                }}>
+                                    duration: duration || "",
+                                    pickUpAddress: fromAddress,
+                                    pickUpLat: lat,
+                                    pickUpLng: lng,
+                                    price: price || 0
+                                }}
+                            >
                                 {requestRideFn => (
-                                    <GetNearbyRides
-                                        query={GET_NEARBY_RIDE}
-                                        skip={!isDriving}>
+                                    <GetNearbyRides query={GET_NEARBY_RIDE} skip={!isDriving}>
                                         {({ subscribeToMore, data: nearbyRide }) => {
                                             const rideSubscriptionOptions: SubscribeToMoreOptions = {
                                                 document: SUBSCRIBE_NEARBY_RIDES,
@@ -119,8 +119,8 @@ class HomeContainer extends React.Component<IProps, IState> {
                                                         return prev;
                                                     }
                                                     const newObject = Object.assign({}, prev, {
-                                                        GetNearbyRides: {
-                                                            ...prev.GetNearbyRides,
+                                                        GetNearbyRide: {
+                                                            ...prev.GetNearbyRide,
                                                             ride: subscriptionData.data.NearbyRideSubscription
                                                         }
                                                     });
@@ -131,25 +131,28 @@ class HomeContainer extends React.Component<IProps, IState> {
                                                 subscribeToMore(rideSubscriptionOptions);
                                             }
                                             return (
-                                                <AcceptRide mutation={ACCEPT_RIDE} onCompleted={this.handleRideAcceptance}>
-                                                    {(acceptRideFn) => (
+                                                <AcceptRide
+                                                    mutation={ACCEPT_RIDE}
+                                                    onCompleted={this.handleRideAcceptance}
+                                                >
+                                                    {acceptRideFn => (
                                                         <HomePresenter
                                                             loading={loading}
                                                             isMenuOpen={isMenuOpen}
                                                             toggleMenu={this.toggleMenu}
+                                                            mapRef={this.mapRef}
                                                             toAddress={toAddress}
                                                             onInputChange={this.onInputChange}
                                                             price={price}
                                                             data={data}
                                                             onAddressSubmit={this.onAddressSubmit}
-                                                            mapRef={this.mapRef}
                                                             requestRideFn={requestRideFn}
                                                             nearbyRide={nearbyRide}
                                                             acceptRideFn={acceptRideFn}
                                                         />
                                                     )}
                                                 </AcceptRide>
-                                            )
+                                            );
                                         }}
                                     </GetNearbyRides>
                                 )}
@@ -340,41 +343,49 @@ class HomeContainer extends React.Component<IProps, IState> {
 
     public handleNearbyDrivers = (data: {} | getDrivers) => {
         if ("GetNearbyDrivers" in data) {
-            const { GetNearbyDrivers: { drivers, ok } } = data;
+            const {
+                GetNearbyDrivers: { drivers, ok }
+            } = data;
             if (ok && drivers) {
                 for (const driver of drivers) {
-                    // console.log("Listening Drivers 1");
-                    // console.log(driver!.lastLat, driver!.lastLng);
                     if (driver && driver.lastLat && driver.lastLng) {
-                        // console.log("Listening Drivers 2");
-                        const existingDriver: google.maps.Marker | undefined = this.drivers.find((driverMarker: google.maps.Marker) => {
-                            const markerID = driverMarker.get("ID");
-                            return markerID === driver.id;
-                        });
-                        if (existingDriver) {
-                            existingDriver.setPosition({ lat: driver.lastLat, lng: driver.lastLng });
-                            existingDriver.setMap(this.map);
+                        const exisitingDriver:
+                            | google.maps.Marker
+                            | undefined = this.drivers.find(
+                                (driverMarker: google.maps.Marker) => {
+                                    const markerID = driverMarker.get("ID");
+                                    return markerID === driver.id;
+                                }
+                            );
+                        if (exisitingDriver) {
+                            exisitingDriver.setPosition({
+                                lat: driver.lastLat,
+                                lng: driver.lastLng
+                            });
+                            exisitingDriver.setMap(this.map);
                         } else {
                             const markerOptions: google.maps.MarkerOptions = {
-                                position: {
-                                    lat: driver.lastLat,
-                                    lng: driver.lastLng
-                                },
                                 icon: {
                                     path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
                                     scale: 5
+                                },
+                                position: {
+                                    lat: driver.lastLat,
+                                    lng: driver.lastLng
                                 }
                             };
-                            const newMarker: google.maps.Marker = new google.maps.Marker(markerOptions);
+                            const newMarker: google.maps.Marker = new google.maps.Marker(
+                                markerOptions
+                            );
                             this.drivers.push(newMarker);
-                            newMarker.set("ID", driver.id); // 나중에 움직여야할때를 위해 설정
+                            newMarker.set("ID", driver.id);
                             newMarker.setMap(this.map);
                         }
                     }
                 }
             }
         }
-    }
+    };
     public handleRideRequest = (data: requestRide) => {
         const { history } = this.props;
         const { RequestRide } = data;
