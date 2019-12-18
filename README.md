@@ -12,6 +12,6 @@ TypeScript, React, GraphQL, Apollo 사용한 카풀 시스템<br>
 ### ChangeDriving Mode
 ![ChangeDriving](demo/CangeDriving.gif)<br>
 ### Driving Request
-![Request](demo/Request.gif)<br>
+![Request](demo/requesting.gif)<br>
 ### Driving Accept
 ![Accept](demo/Accept.gif)
