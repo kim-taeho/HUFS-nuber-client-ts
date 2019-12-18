@@ -93,7 +93,7 @@ const HomePresenter: React.SFC<IProps> = ({
                         <ExtendedButton onClick={onAddressSubmit} disabled={toAddress === ""} value={price ? "Change Address" : "Pick Address"} />
                     </React.Fragment>
                 )}
-                {price && <RequestButton onClick={requestRideFn} disabled={toAddress === ""} value={`Request Ride ($${price})`} />}
+                {price && <RequestButton onClick={requestRideFn} disabled={toAddress === ""} value={`Request Ride (${price}WON)`} />}
                 {ride && (
                     <RidePopUp
                         id={ride.id}
